@@ -27,12 +27,19 @@ public class ParkingLot {
     }
 
     public String parkVehicle(String type, String regNumber, String color){
+        //We add a validation to prevent receiving null values
+        if (type == null || regNumber == null || color == null) {
+                System.out.println("Invalid vehicle data");
+                return null;
+            }
+
        //First we create a Vehicle object
-        Vehicle vehicle = new Vehicle("truck", "XRK 892", "blue");
+        Vehicle vehicle = new Vehicle(type, regNumber, color);
         for(int i = 0; i < slots.size();i++){
             for (int j = 0; j < slots.get(i).size(); j++) {
                 Slot slot = slots.get(i).get(j);
-                if(slot.type == type && slot.vehicle == null){
+                //We use the .equal comparison for Strings in the type validation. Remember == it's more for some booleans (in depends)
+                if(slot.type.equals(type) && slot.vehicle == null){
                     slot.vehicle = vehicle;
                     slot.ticketId = generateTicketId(i + 1, j + 1);
                     return slot.ticketId;
