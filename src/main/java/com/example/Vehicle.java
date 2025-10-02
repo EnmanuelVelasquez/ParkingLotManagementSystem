@@ -15,7 +15,7 @@ public abstract class Vehicle {
         // .trim helps us to avoid unwanted spaces and .toUpperCase helps us to use the capitalized word
         this.licensePlate = licensePlate.trim().toUpperCase();
         this.ownerName = ownerName;
-        //we use the 
+        //we use the ternary operator for if; true = unkown ; false = color without spaces
         this.color = color == null ? "unknown" : color.trim();
     }
 
