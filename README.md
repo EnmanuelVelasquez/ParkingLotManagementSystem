@@ -8,7 +8,7 @@ The main functions of the code are very simple:
 
 Some other functionalities are: 
 - Get Number of Open Slots is also a funcionality that helps us to know how many available spaces we have for the vehicles.
-- Display Open Slots is another is more detailed list of the slots we have available for each type of vehicle.
+- Display Open Slots is another more detailed list of the slots we have available for each type of vehicle.
 - Display Occupied Slots is a useful function to know those slots that are already busy.
 
 
