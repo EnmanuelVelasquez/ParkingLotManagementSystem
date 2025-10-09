@@ -15,10 +15,10 @@ public enum VehicleType {
         //This validate it a specific vehicle type can fit in a slot of the given size
         //We use "This" so it switches on the current enum constant
         switch (this) {
-            case MOTORCYCLE: //Motorcycle fits any slot
-            return true;
-            case CAR:        //Fits only medium or larger slots
-            return slotSize == SlotSize.MEDIUM || slotSize == SlotSize.LARGE;     
+            case MOTORCYCLE: //Motorcycle fits small
+            return slotSize == SlotSize.SMALL;
+            case CAR:        //Fits only medium 
+            return slotSize == SlotSize.MEDIUM;     
             case TRUCK:      //Fits only large slots
             return slotSize == SlotSize.LARGE;
             default:         //Defensive fallback, shouldn't happen unless the enum changes

@@ -82,8 +82,9 @@ public class ParkingLot {
 
 
     private String generateTicketId(int floor, int slotNumber){
-        return parkingLotId + "_" + floor + "_" + slotNumber;
+        return parkingLotId + " _" + floor + "_" + slotNumber;
     }
+
 
 
     public void unPark(String ticketId){
@@ -120,7 +121,7 @@ public class ParkingLot {
         Slot slot = slots.get(floorIndex).get(slotIndex);
         slot.vehicle = null;
         slot.ticketId = null;
-        System.out.println("Unparked Vehicle");
+        System.out.println("Unparked Vehicle with ticked Id: " + ticketId);
 
     }
 
@@ -145,18 +146,19 @@ public class ParkingLot {
         System.out.println("Number of slots available for " + type + " = " + count);
     }
 
-    public void displayOpenSlots(String type){
+    public void displayOpenSlots(String type) {
         VehicleType vt = VehicleType.fromString(type);
-        if(vt == null){
-            System.out.println("Unkown vehicle type: " + type);
+        if (vt == null) {
+            System.out.println("Unknown vehicle type: " + type);
             return;
         }
 
-        for(int i = 0; i < slots.size(); i++){
-            for(int j = 0; j < slots.get(i).size(); j++){
+        System.out.println("Available slots for " + type + ":");
+        for (int i = 0; i < slots.size(); i++) {
+            for (int j = 0; j < slots.get(i).size(); j++) {
                 Slot slot = slots.get(i).get(j);
-                if(slot.vehicle != null && slot.vehicle.getType() == vt){
-                    System.out.println("Occupied by " + type + "in= " + "Floor: " + (i+1) + slot + (j+1));
+                if (slot.isFree() && vt.fitsSlot(slot.getSize())) {
+                    System.out.println("Floor: " + (i + 1) + " slot: " + (j + 1));
                 }
             }
         }
@@ -173,7 +175,7 @@ public class ParkingLot {
             for (int j = 0; j < slots.get(i).size(); j++) {
                 Slot slot = slots.get(i).get(j);
                 if (slot.vehicle != null && slot.vehicle.getType() == vt) {
-                    System.out.println("Occupied by " + typeStr + " in = " + "Floor: " + (i + 1) + " slot: " + (j + 1));
+                    System.out.println("Occupied by " + typeStr + " in " + " Floor: " + (i + 1) + " slot: " + (j + 1));
                 }
             }
         }
