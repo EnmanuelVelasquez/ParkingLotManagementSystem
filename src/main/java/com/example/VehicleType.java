@@ -26,7 +26,7 @@ public enum VehicleType {
         }
     }
 
-    // this fromString method help us to convert a user vlaue like "car" into the corresponding vehicle constant (CAR)
+    // this fromString method help us to convert a user value like "car" into the corresponding vehicle constant (CAR)
     public static VehicleType fromString(String s){
         //Avoid calling methods on null
         if  (s==null){
