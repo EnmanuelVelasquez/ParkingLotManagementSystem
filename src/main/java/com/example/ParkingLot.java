@@ -29,101 +29,116 @@ public class ParkingLot {
         }
     }
 
-    public String parkVehicle(String type, String regNumber, String color, String Owner){
+    public String parkVehicle(Vehicle vehicle){
         //Add a validation to prevent receiving null values
-        if (type == null || regNumber == null || color == null) {
-                System.out.println("Invalid vehicle data");
+        if (vehicle == null) {
+                System.out.println("Invalid vehicle (null)");
                 return null;
             }
-       //Use the enum to create a new object depending on the type received in the parameters
-       //Use froString function to 
-        VehicleType vt = VehicleType.fromString(type);
-        if (vt == null){
-            System.out.println("Unkown vehicle type: " + type );
-            return null;
-        }
-
-        //Implement a switch for every case of the enum and fill the parameters
-        Vehicle vehicle;
-        switch (vt) {
-            case CAR:
-                vehicle = new Car(regNumber, color, Owner);
-                break;
-            case MOTORCYCLE:
-                vehicle = new Motorcycle(regNumber, color, Owner);
-                break;
-            case TRUCK:
-                vehicle = new Truck(regNumber, color, Owner);
-                break;
-            default:
-                System.out.println("Unsupported vehicle type: " + vt);
-                return null;
-        }
-
-         // Find first free slot that fits this vehicle type
+        //create vt to save the type of vehicle
+        VehicleType vt = vehicle.getType();
+        
+        // Use nested for loop to find first free slot that fits this vehicle type
         for (int i = 0; i < slots.size(); i++) {
             //Create another list for getting the information of the slots of the floor
             List<Slot> floorSlots = slots.get(i);
             for (int j = 0; j < floorSlots.size(); j++) {
                 Slot slot = floorSlots.get(j);
                 //Validate the slot is free and the size is correct for the type of vehicle
+                //Use of functions of Slot and VehicleType
                 if (slot.isFree() && vt.fitsSlot(slot.getSize())) {
                     //Finally park
                     slot.vehicle = vehicle;
                     slot.ticketId = generateTicketId(i + 1, j + 1);
+                    //Impliment the variable and use the built-in function for the current time
+                    slot.parkedAtMillis = System.currentTimeMillis();
                     return slot.ticketId;
                 }
             }
         }
         //If there's no slot available print the message
-        System.out.println("No slot available for given type");
-        return null;
+        return "No slot available for given type";
+    }
+
+    public String parkVehicle(String type, String regNumber, String color, String owner){
+        // validation to prevent receiving null values
+        if (type == null || regNumber == null || color == null || owner == null) {
+            System.out.println("Invalid vehicle data");
+            return null;
+        }
+
+        // use the factory to create a Vehicle (normalizes input)
+        Vehicle vehicle = VehicleFactory.createVehicleFromString(type, regNumber, color, owner);
+        if (vehicle == null) {
+            System.out.println("Unknown vehicle type: " + type);
+            return null;
+        }
+
+        // call the domain method
+        return parkVehicle(vehicle);
     }
 
 
     private String generateTicketId(int floor, int slotNumber){
-        return parkingLotId + " _" + floor + "_" + slotNumber;
+        return parkingLotId + "_" + floor + "_" + slotNumber;
     }
 
 
-
-    public void unPark(String ticketId){
-        if (ticketId == null) {
-            System.out.println("Invalid ticket ");
+    public void unPark(String ticketId) {
+        if (ticketId == null || ticketId.isBlank()) {
+            System.out.println("Invalid ticket");
             return;
         }
 
-        //This .split is spliting the String into pieces using the underscore as the separator
+        // Split the ticket (expected: PARKINGID_floor_slot or _floor_slot)
         String[] extract = ticketId.split("_");
-
         if (extract.length < 3) {
-            System.out.println("Invalid ticket format:" + ticketId);
+            System.out.println("Invalid ticket format: " + ticketId);
             return;
         }
 
-        //Initialize them outside the try 
         int floorIndex, slotIndex;
-        try{
-        //We take the floor Index from the first part
-        floorIndex = Integer.parseInt(extract[1])-1;
-        //We take the slot Index from the second part
-        slotIndex = Integer.parseInt(extract[2])-1;  
+        try {
+            floorIndex = Integer.parseInt(extract[1]) - 1;
+            slotIndex  = Integer.parseInt(extract[2]) - 1;
         } catch (NumberFormatException e) {
-            System.out.println("Invalid ticket numbers (not integers)" + ticketId);
+            System.out.println("Invalid ticket numbers (not integers): " + ticketId);
             return;
         }
 
-        if (floorIndex < 0 || floorIndex >= slots.size() || slotIndex < 0 || slotIndex >= slots.get(floorIndex).size()){
-            System.out.println("Ticket refers to a non existing floor: " + ticketId);
+        if (floorIndex < 0 || floorIndex >= slots.size()
+            || slotIndex < 0 || slotIndex >= slots.get(floorIndex).size()) {
+            System.out.println("Ticket refers to a non-existing slot: " + ticketId);
             return;
         }
 
         Slot slot = slots.get(floorIndex).get(slotIndex);
+
+        // If there's no vehicle, nothing to unpark
+        if (slot.vehicle == null) {
+            System.out.println("Slot already empty for ticket: " + ticketId);
+            // clear defensive state if desired:
+            slot.ticketId = null;
+            slot.parkedAtMillis = 0L;
+            return;
+        }
+
+        // Use Slot helper to get parked time
+        long minutesParked = slot.getParkedMinutes();
+
+        // Calculate fee via Vehicle's polymorphic method
+        double fee = slot.vehicle.calculateFee(minutesParked);
+
+        // Clear the slot
         slot.vehicle = null;
         slot.ticketId = null;
-        System.out.println("Unparked Vehicle with ticked Id: " + ticketId);
+        slot.parkedAtMillis = 0L;
 
+        // Print friendly receipt
+        System.out.printf("Unparked Vehicle (ticket=%s). Time parked: %d minutes. Fee: %.2f%n",
+                        ticketId, minutesParked, fee);
     }
+
 
     public void getNumberOfOpenSlots(String type){
         VehicleType vt = VehicleType.fromString(type);

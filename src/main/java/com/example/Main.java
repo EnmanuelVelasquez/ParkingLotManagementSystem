@@ -11,11 +11,14 @@
             Truck truck1 = new Truck("ASSD-34", "Black-White", "Tim");
             Motorcycle motorcycle1 = new Motorcycle("AAS-142", "Black", "James");
 
+
             System.out.println(parkingLot1.parkVehicle(car1.getType().toString(), car1.getLicensePlate(), car1.getColor(), car1.getOwnerName()));
             System.out.println(parkingLot1.parkVehicle(car2.getType().toString(), car2.getLicensePlate(), car2.getColor(), car2.getOwnerName()));
             System.out.println(parkingLot1.parkVehicle("car", "ADF-46", "BLUE", "Ritt"));
             System.out.println(parkingLot1.parkVehicle(truck1.getType().toString(), truck1.getLicensePlate(), truck1.getColor(), truck1.getOwnerName()));
             System.out.println(parkingLot1.parkVehicle(motorcycle1.getType().toString(), motorcycle1.getLicensePlate(), motorcycle1.getColor(), motorcycle1.getOwnerName()));
+
+    
 
             parkingLot1.displayOccupiedSlots("car");
             parkingLot1.displayOpenSlots("car");
@@ -31,6 +34,7 @@
             System.out.println(parkingLot1.parkVehicle("car", "ADF-46", "BLUE", "Ritt"));
             parkingLot1.displayOccupiedSlots("car");
 
+            parkingLot1.parkVehicle("bus", "BUS1", "white","Dan");
             
         }
     }

@@ -9,7 +9,7 @@ public abstract class Vehicle {
 
 
     protected Vehicle(String licensePlate, String color, String ownerName, VehicleType type){
-        //We validate to not have null information
+        //validate to not have null information
         if (licensePlate == null || licensePlate.isBlank()){
             throw new IllegalArgumentException("Plate required");
         }
