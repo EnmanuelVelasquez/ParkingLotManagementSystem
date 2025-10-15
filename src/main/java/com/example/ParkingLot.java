@@ -1,16 +1,19 @@
 package com.example;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class ParkingLot {
     //Create a private constant named parkingLotId
     private final String parkingLotId;
-    //We gonna create a list with 2 rows and 3 columns (2*3)
+    //We gonna create a list with another list inside (similar to dictionary)
     List<List<Slot>> slots;
+    private final Map<String, int[]> ticketToPos = new HashMap<>();
 
     public ParkingLot(String parkingLotId, int numberFloors, int numberOfSlotsPerFloor){
-        //Assing the variable into the constrcutor using a validation object to not receive am empty data
+        //Assing the variable into the constructor using a validation object to not receive an empty value
         this.parkingLotId = Objects.requireNonNull(parkingLotId, "parkingLotId required");
         //Initialize the list of slots and then start filling the slots of each floor
         this.slots = new ArrayList<>(); 
@@ -36,7 +39,7 @@ public class ParkingLot {
                 return null;
             }
         //create vt to save the type of vehicle
-        VehicleType vt = vehicle.getType();
+        VehicleType saveVehicleType = vehicle.getType();
         
         // Use nested for loop to find first free slot that fits this vehicle type
         for (int i = 0; i < slots.size(); i++) {
@@ -46,13 +49,16 @@ public class ParkingLot {
                 Slot slot = floorSlots.get(j);
                 //Validate the slot is free and the size is correct for the type of vehicle
                 //Use of functions of Slot and VehicleType
-                if (slot.isFree() && vt.fitsSlot(slot.getSize())) {
+                if (slot.isFree() && saveVehicleType.fitsSlot(slot.getSize())) {
                     //Finally park
+                    String ticket = generateTicketId(i+1, j+1);
                     slot.vehicle = vehicle;
-                    slot.ticketId = generateTicketId(i + 1, j + 1);
-                    //Impliment the variable and use the built-in function for the current time
+                    slot.ticketId = ticket;
+                    //Implement the variable and use the built-in function for the current time
                     slot.parkedAtMillis = System.currentTimeMillis();
-                    return slot.ticketId;
+                    //record position in map for O(1) lookup on unPark
+                    ticketToPos.put(ticket, new int[]{i,j});
+                    return ticket;
                 }
             }
         }
@@ -78,67 +84,99 @@ public class ParkingLot {
         return parkVehicle(vehicle);
     }
 
-
     private String generateTicketId(int floor, int slotNumber){
         return parkingLotId + "_" + floor + "_" + slotNumber;
     }
 
-
     public void unPark(String ticketId) {
-        if (ticketId == null || ticketId.isBlank()) {
-            System.out.println("Invalid ticket");
-            return;
-        }
-
-        // Split the ticket (expected: PARKINGID_floor_slot or _floor_slot)
-        String[] extract = ticketId.split("_");
-        if (extract.length < 3) {
-            System.out.println("Invalid ticket format: " + ticketId);
-            return;
-        }
-
-        int floorIndex, slotIndex;
-        try {
-            floorIndex = Integer.parseInt(extract[1]) - 1;
-            slotIndex  = Integer.parseInt(extract[2]) - 1;
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid ticket numbers (not integers): " + ticketId);
-            return;
-        }
-
-        if (floorIndex < 0 || floorIndex >= slots.size()
-            || slotIndex < 0 || slotIndex >= slots.get(floorIndex).size()) {
-            System.out.println("Ticket refers to a non-existing slot: " + ticketId);
-            return;
-        }
-
-        Slot slot = slots.get(floorIndex).get(slotIndex);
-
-        // If there's no vehicle, nothing to unpark
-        if (slot.vehicle == null) {
-            System.out.println("Slot already empty for ticket: " + ticketId);
-            // clear defensive state if desired:
-            slot.ticketId = null;
-            slot.parkedAtMillis = 0L;
-            return;
-        }
-
-        // Use Slot helper to get parked time
-        long minutesParked = slot.getParkedMinutes();
-
-        // Calculate fee via Vehicle's polymorphic method
-        double fee = slot.vehicle.calculateFee(minutesParked);
-
-        // Clear the slot
-        slot.vehicle = null;
-        slot.ticketId = null;
-        slot.parkedAtMillis = 0L;
-
-        // Print friendly receipt
-        System.out.printf("Unparked Vehicle (ticket=%s). Time parked: %d minutes. Fee: %.2f%n",
-                        ticketId, minutesParked, fee);
+    //Prevents null-pointer exceptions later and gives a clear error message to the caller.
+    if (ticketId == null || ticketId.isBlank()) {
+        System.out.println("Invalid ticket");
+        return;
     }
 
+    //Removes leading/trailing whitespace 
+    ticketId = ticketId.trim();
+
+    // Map lookup is O(1). Remove to avoid stale entries and keep the map sync. This is the most common way to do it.
+    //Once remove is used ir returns the removed value to save into the position list
+    int[] position = ticketToPos.remove(ticketId); 
+    int floorIndex = -1, slotIndex = -1;
+
+    //
+    if (position != null) {
+        floorIndex = position[0];
+        slotIndex  = position[1];
+    } else {
+        // Fallback (alternativa): tolerant scan (helps if tickets existed before map or user passed "_1_4" or a different version of the ticketId)
+        // Try exact match, endsWith match, or full-with-prefix match
+        //This is a flag to see if matches
+        boolean found = false;
+        //ternary condicional, if it's coorect let ticketId like that. If it finds the fallback, it changes
+        String maybeFull = ticketId.startsWith(parkingLotId) ? ticketId : parkingLotId + ticketId;
+
+        for (int i = 0; i < slots.size() && !found; i++) {
+            for (int j = 0; j < slots.get(i).size(); j++) {
+                Slot slot = slots.get(i).get(j);
+                String ticketIteration = slot.ticketId;
+                //If it's empty continue with the next one.
+                if (ticketIteration == null) continue;
+                //If you find the ticket with some of the fallbacks then you continue
+                if (ticketIteration.equals(ticketId) || ticketIteration.equals(maybeFull) || ticketIteration.endsWith(ticketId)) {
+                    floorIndex = i;
+                    slotIndex = j;
+                    // remove stale map entry if present
+                    ticketToPos.remove(ticketIteration);
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            System.out.println("Unknown ticket: " + ticketId);
+            return;
+        }
+    }
+
+    // Defensive bounds check (out of range)
+    if (floorIndex < 0 || floorIndex >= slots.size()
+        || slotIndex < 0 || slotIndex >= slots.get(floorIndex).size()) {
+        System.out.println("Ticket refers to a non-existing slot: " + ticketId);
+        return;
+    }
+
+    //call the information of slots
+    Slot slot = slots.get(floorIndex).get(slotIndex);
+
+    // Verify the slot has the same ticket (tolerant check for endsWith accepted earlier)
+    if (slot.ticketId == null || !(slot.ticketId.equals(ticketId) || slot.ticketId.endsWith(ticketId))) {
+        System.out.println("Ticket does not match the slot: " + ticketId);
+        return;
+    }
+
+    // If there's no vehicle, nothing to unpark
+    if (slot.vehicle == null) {
+        System.out.println("Slot already empty for ticket: " + ticketId);
+        // defensive cleanup in case the gaps were filled
+        slot.ticketId = null;
+        slot.parkedAtMillis = 0L;
+        return;
+    }
+
+    // Use existing Slot helper to compute minutes
+    long minutesParked = slot.getParkedMinutes();
+
+    // Polymorphic fee calculation
+    double fee = slot.vehicle.calculateFee(minutesParked);
+
+    // Clear slot
+    slot.vehicle = null;
+    slot.ticketId = null;
+    slot.parkedAtMillis = 0L;
+
+    // Print friendly receipt
+    System.out.printf("Unparked Vehicle (ticket=%s). Time parked: %d minutes. Fee: %.2f%n", ticketId, minutesParked, fee);
+}
 
     public void getNumberOfOpenSlots(String type){
         VehicleType vt = VehicleType.fromString(type);

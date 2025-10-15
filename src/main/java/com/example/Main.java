@@ -18,7 +18,6 @@
             System.out.println(parkingLot1.parkVehicle(truck1.getType().toString(), truck1.getLicensePlate(), truck1.getColor(), truck1.getOwnerName()));
             System.out.println(parkingLot1.parkVehicle(motorcycle1.getType().toString(), motorcycle1.getLicensePlate(), motorcycle1.getColor(), motorcycle1.getOwnerName()));
 
-    
 
             parkingLot1.displayOccupiedSlots("car");
             parkingLot1.displayOpenSlots("car");
