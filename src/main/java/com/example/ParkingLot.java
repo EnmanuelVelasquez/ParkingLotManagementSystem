@@ -159,7 +159,7 @@ public class ParkingLot {
         System.out.println("Slot already empty for ticket: " + ticketId);
         // defensive cleanup in case the gaps were filled
         slot.ticketId = null;
-        slot.parkedAtMillis = 0L;
+        slot.parkedAtMillis = 0L;   
         return;
     }
 
