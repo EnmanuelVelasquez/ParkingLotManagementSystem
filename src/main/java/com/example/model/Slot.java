@@ -40,4 +40,26 @@ public class Slot {
         return "Slot{" + "size=" + size + ", ticketId=" + ticketId +
                ", occupied=" + (vehicle != null) + '}';
     }
+
+        // --- Add these methods to Slot.java (inside class Slot) ---
+    public void setTicketId(String ticketId) {
+        this.ticketId = ticketId;
+    }
+
+    public void setParkedAtMillis(long millis) {
+        this.parkedAtMillis = millis;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
+    }
+
+    public String getTicketId() {
+        return ticketId;
+    }
+
+    public long getParkedAtMillis() {
+        return parkedAtMillis;
+    }
+
 }
