@@ -1,4 +1,4 @@
-package com.example;
+package com.example.model;
 
 //We create vehicle as abstract because we're gonna use this as the 
 public abstract class Vehicle {

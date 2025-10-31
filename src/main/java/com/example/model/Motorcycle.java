@@ -1,4 +1,4 @@
-package com.example;
+package com.example.model;
 
 public class Motorcycle extends Vehicle{
     public Motorcycle (String plate, String color, String owner){

@@ -1,4 +1,4 @@
-package com.example;
+package com.example.model;
 
 //We create the enumerator for the types of vehicle
 //The main reason is becuase it makes the code easier to understand and 

@@ -1,4 +1,4 @@
-package com.example;
+package com.example.model;
 
 //We create the enumerator for the sizes of each slot 
 //We use the reserved word enum insted of class
