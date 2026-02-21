@@ -1,10 +1,17 @@
 package com.example.repository;
 
+//The firts step is to import all the necessary libraries
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
 import com.example.model.Slot;
 import com.example.model.SlotSize;
 import com.example.model.Ticket;
-
-import java.util.*;
 
 /**
  * Simple in-memory repository.
@@ -14,8 +21,12 @@ import java.util.*;
 public class InMemoryParkingRepository implements ParkingRepository {
 
     private final String parkingLotId;
+    
+    //Storage for slots: List of floors, each with list of slots
     private final List<List<Slot>> slots;
+    //Map to tie tickedId to position (floor,Slot)
     private final Map<String, int[]> ticketToPos = new HashMap<>();
+    //Map to store full ticket objects 
     private final Map<String, Ticket> tickets = new HashMap<>();
 
     private final int numberFloors;
@@ -62,7 +73,7 @@ public class InMemoryParkingRepository implements ParkingRepository {
     }
 
     @Override
-    public Optional<Slot> getSlot(int floorIndex, int slotIndex) {
+    public Optional<Slot> getSlot(int floorIndex, int slotIndex){
         if (floorIndex < 0 || floorIndex >= slots.size()) return Optional.empty();
         List<Slot> floor = slots.get(floorIndex);
         if (slotIndex < 0 || slotIndex >= floor.size()) return Optional.empty();
